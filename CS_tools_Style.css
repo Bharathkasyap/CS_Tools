@@ -27,13 +27,13 @@ body.dark-mode {
 body { background: var(--bg) !important; color: var(--text) !important; }
 header { background: var(--panel) !important; border-color: var(--panel-border) !important; }
 
-/* Common panels, cards, lists */
+/* Panels, cards, lists */
 .bg-white { background: var(--panel) !important; }
 .border { border-color: var(--panel-border) !important; }
 .text-slate-900 { color: var(--text) !important; }
 .text-slate-500, .text-slate-600 { color: var(--muted) !important; }
 
-/* Left nav items */
+/* Left nav */
 .nav-item { display:block; width:100%; text-align:left; padding:.5rem .75rem; border-radius:.375rem; cursor:pointer; }
 .nav-item:hover { background: var(--hover); }
 
@@ -52,7 +52,7 @@ header { background: var(--panel) !important; border-color: var(--panel-border) 
 .tabs .tab { padding:.25rem .5rem; border:1px solid var(--panel-border); border-radius:.375rem; margin-right:.5rem; cursor:pointer; }
 .tabs .tab.active { background: var(--tab-active); }
 
-/* Inputs / Textareas / Selects */
+/* Inputs/Textareas/Selects */
 input, textarea, select { background: var(--panel); color: var(--text); border:1px solid var(--panel-border); }
 input::placeholder, textarea::placeholder { color: var(--muted); }
 
@@ -60,7 +60,7 @@ input::placeholder, textarea::placeholder { color: var(--muted); }
 .hidden { display:none; }
 .mono { font-family: ui-monospace,SFMono-Regular,Menlo,Monaco,Consolas,monospace; }
 
-/* Simple responsive grids used in content */
+/* Grids */
 .grid2 { display:grid; grid-template-columns:1fr 1fr; gap:.75rem; }
 .grid3 { display:grid; grid-template-columns:1fr 1fr 1fr; gap:.75rem; }
 @media (max-width: 1024px) { .grid2, .grid3 { grid-template-columns:1fr; } }
