@@ -1,69 +1,28 @@
 <!DOCTYPE html>
 <html lang="en">
 <head>
-  <meta charset="UTF-8">
-  <meta name="viewport" content="width=device-width, initial-scale=1.0">
+  <meta charset="UTF-8" />
+  <meta name="viewport" content="width=device-width, initial-scale=1.0" />
   <title>Cyber Analyst Mission Control</title>
-
-  <!-- Tailwind CSS -->
-  <script src="https://cdn.tailwindcss.com"></script>
-
-  <!-- Custom CSS -->
-  <link rel="stylesheet" href="CS_tools_Style.css">
-
-  <!-- XLSX Helper Script -->
-  <script type="text/javascript">
-    var gk_isXlsx = false;
-    var gk_xlsxFileLookup = {};
-    var gk_fileData = {};
-    function filledCell(cell) {
-      return cell !== '' && cell != null;
-    }
-    function loadFileData(filename) {
-      if (gk_isXlsx && gk_xlsxFileLookup[filename]) {
-        try {
-          var workbook = XLSX.read(gk_fileData[filename], { type: 'base64' });
-          var firstSheetName = workbook.SheetNames[0];
-          var worksheet = workbook.Sheets[firstSheetName];
-          var jsonData = XLSX.utils.sheet_to_json(worksheet, { header: 1, blankrows: false, defval: '' });
-          var filteredData = jsonData.filter(row => row.some(filledCell));
-          var headerRowIndex = filteredData.findIndex((row, index) =>
-            row.filter(filledCell).length >= filteredData[index + 1]?.filter(filledCell).length
-          );
-          if (headerRowIndex === -1 || headerRowIndex > 25) headerRowIndex = 0;
-          var csv = XLSX.utils.aoa_to_sheet(filteredData.slice(headerRowIndex));
-          csv = XLSX.utils.sheet_to_csv(csv, { header: 1 });
-          return csv;
-        } catch (e) {
-          console.error(e);
-          return "";
-        }
-      }
-      return gk_fileData[filename] || "";
-    }
-  </script>
-
-  <!-- Main JS -->
-  <script src="CS_tools_Script.js" defer></script>
+  <link href="https://cdn.jsdelivr.net/npm/tailwindcss@2.2.19/dist/tailwind.min.css" rel="stylesheet">
+  <link rel="stylesheet" href="style.css">
 </head>
-<body class="min-h-screen flex flex-col">
-
+<body>
   <!-- Header -->
-  <header class="p-4 border-b flex justify-between items-center">
-    <h1 class="text-lg font-semibold">Cyber Analyst Mission Control</h1>
-    <button id="themeToggle" class="btn">Theme</button>
+  <header class="flex justify-between items-center p-4 bg-white dark:bg-gray-800 shadow-md">
+    <h1 class="text-xl font-bold text-indigo-600">Cyber Analyst Mission Control</h1>
+    <button id="themeToggle" class="btn">Toggle Theme</button>
   </header>
 
-  <!-- Main Layout -->
-  <main class="flex-1 grid grid-cols-[250px_1fr_250px] lg:grid-cols-1 gap-4 p-4">
-
+  <div class="flex min-h-screen">
     <!-- Sidebar -->
-    <aside id="leftNav" class="space-y-4 p-3 border rounded shadow">
-      <input id="globalSearch" class="w-full p-2 rounded border" type="text" placeholder="Filter tools...">
+    <aside id="leftNav" class="sidebar w-64 bg-white dark:bg-gray-800 p-4 overflow-y-auto">
+      <input id="globalSearch" class="w-full p-2 border rounded-md" type="text" placeholder="Search tools...">
 
-      <section>
-        <button data-collapse="#grp-network" class="font-semibold w-full text-left">Networking▾</button>
-        <div id="grp-network" class="mt-2 space-y-1">
+      <!-- Sections -->
+      <section class="mt-4">
+        <button data-collapse="#grp-network" class="font-semibold">Networking</button>
+        <div id="grp-network" class="mt-2 space-y-1 hidden">
           <button class="nav-item" data-tool="subnetting">Subnetting Calculator</button>
           <button class="nav-item" data-tool="cidr">CIDR Calculator</button>
           <button class="nav-item" data-tool="wildcard">Wildcard Mask</button>
@@ -72,91 +31,123 @@
         </div>
       </section>
 
-      <section>
-        <button data-collapse="#grp-crypto" class="font-semibold w-full text-left">Crypto & Encoding▾</button>
-        <div id="grp-crypto" class="mt-2 space-y-1">
+      <section class="mt-4">
+        <button data-collapse="#grp-crypto" class="font-semibold">Crypto & Encoding</button>
+        <div id="grp-crypto" class="mt-2 space-y-1 hidden">
           <button class="nav-item" data-tool="base64">Base64 Encode/Decode</button>
         </div>
       </section>
 
-      <section>
-        <button data-collapse="#grp-risk" class="font-semibold w-full text-left">Risk & Governance▾</button>
-        <div id="grp-risk" class="mt-2 space-y-1">
+      <section class="mt-4">
+        <button data-collapse="#grp-risk" class="font-semibold">Risk & Governance</button>
+        <div id="grp-risk" class="mt-2 space-y-1 hidden">
           <button class="nav-item" data-tool="ale">ALE / SLE / ARO Calculator</button>
           <button class="nav-item" data-tool="cvss">CVSS v3.1 Vector Helper</button>
         </div>
       </section>
 
-      <section>
-        <button data-collapse="#grp-siem" class="font-semibold w-full text-left">SIEM & Detection▾</button>
-        <div id="grp-siem" class="mt-2 space-y-1">
+      <section class="mt-4">
+        <button data-collapse="#grp-siem" class="font-semibold">SIEM & Detection</button>
+        <div id="grp-siem" class="mt-2 space-y-1 hidden">
           <button class="nav-item" data-tool="kqlCheat">KQL Cheat Sheet</button>
           <button class="nav-item" data-tool="splCheat">SPL Cheat Sheet</button>
           <button class="nav-item" data-tool="regex">Regex Tester</button>
         </div>
       </section>
 
-      <section>
-        <button data-collapse="#grp-runbooks" class="font-semibold w-full text-left">Runbooks▾</button>
-        <div id="grp-runbooks" class="mt-2 space-y-1">
-          <button class="nav-item" data-tool="runbook" data-runbook="ransomware">Ransomware Suspected</button>
+      <section class="mt-4">
+        <button data-collapse="#grp-runbooks" class="font-semibold">Runbooks</button>
+        <div id="grp-runbooks" class="mt-2 space-y-1 hidden">
+          <button class="nav-item" data-tool="runbook" data-runbook="ransomware">Ransomware</button>
+          <button class="nav-item" data-tool="runbook" data-runbook="phishing">Phishing</button>
           <button class="nav-item" data-tool="runbook" data-runbook="unauth">Unauthorized Access</button>
-          <button class="nav-item" data-tool="runbook" data-runbook="phishing">Phishing Wave</button>
-          <button class="nav-item" data-tool="runbook" data-runbook="exfil">Active Data Exfiltration</button>
-          <button class="nav-item" data-tool="runbook" data-runbook="lateral">Lateral Movement</button>
-          <button class="nav-item" data-tool="runbook" data-runbook="webshell">Web Shell Suspected</button>
-          <button class="nav-item" data-tool="runbook" data-runbook="ddos">DDoS / Edge Exploitation</button>
-          <button class="nav-item" data-tool="runbook" data-runbook="insider">Insider Data Mishandling</button>
-          <button class="nav-item" data-tool="runbook" data-runbook="lostdevice">Lost/Stolen Device</button>
-        </div>
-      </section>
-
-      <section>
-        <button data-collapse="#grp-links" class="font-semibold w-full text-left">Gold Links▾</button>
-        <div id="grp-links" class="mt-2 space-y-1">
-          <button class="nav-item" data-tool="links">Curated Docs & References</button>
         </div>
       </section>
     </aside>
 
     <!-- Main Content -->
-    <section class="space-y-4">
+    <main class="flex-1 p-6">
       <div id="view-dashboard" class="view">
-        <h2 class="font-semibold text-lg">Dashboard</h2>
-        <p class="text-slate-500">Quick access to favorites and recent tools.</p>
-        <div class="grid grid-cols-2 gap-2 mt-4">
-          <button class="card-link" data-tool="base64">Open Base64</button>
-          <button class="card-link" data-tool="cidr">Open CIDR</button>
-          <button class="card-link" data-tool="subnetting">Open Subnetting</button>
-          <button class="card-link" data-tool="wildcard">Open Wildcard</button>
-          <button class="card-link" data-tool="kqlCheat">Open KQL</button>
-        </div>
+        <h2 class="text-xl font-bold">Dashboard</h2>
+        <p class="text-gray-500">Quick access to your tools</p>
       </div>
-      <!-- Tool views (subnetting, base64, etc.) stay as you already wrote -->
-    </section>
 
-    <!-- Right Sidebar -->
-    <aside class="space-y-4 p-3 border rounded shadow">
-      <section>
-        <h2 class="font-semibold text-lg">Related Links</h2>
-        <ul id="relatedLinks" class="mt-2 list-disc ml-5 space-y-1"></ul>
-      </section>
+      <!-- Subnetting -->
+      <div id="view-subnetting" class="view hidden">
+        <h2 class="text-lg font-bold">Subnetting Calculator</h2>
+        <input id="subnet-ip" class="input" placeholder="Enter IPv4 (192.168.1.0)">
+        <input id="subnet-mask" class="input" placeholder="Subnet mask or prefix">
+        <button id="subnet-calc" class="btn">Calculate</button>
+        <textarea id="subnet-out" class="output"></textarea>
+      </div>
 
-      <section>
-        <h2 class="font-semibold text-lg">Personal Quick Links</h2>
-        <div class="mt-2 flex gap-2">
-          <input id="ql-url" class="flex-1 p-2 rounded border" type="text" placeholder="Add URL">
-          <button id="ql-add" class="btn">Add</button>
-        </div>
-        <ul id="ql-list" class="mt-2 list-disc ml-5 space-y-1"></ul>
-      </section>
+      <!-- CIDR -->
+      <div id="view-cidr" class="view hidden">
+        <h2 class="text-lg font-bold">CIDR Calculator</h2>
+        <input id="cidr-ip" class="input" placeholder="IP address">
+        <input id="cidr-prefix" class="input" placeholder="Prefix (0-32)">
+        <button id="cidr-calc" class="btn">Calculate</button>
+        <textarea id="cidr-out" class="output"></textarea>
+      </div>
 
-      <section>
-        <h2 class="font-semibold text-lg">Notes</h2>
-        <textarea id="notes" class="w-full p-2 mt-2 border rounded" rows="10" placeholder="Auto saved locally"></textarea>
-      </section>
-    </aside>
+      <!-- Wildcard -->
+      <div id="view-wildcard" class="view hidden">
+        <h2 class="text-lg font-bold">Wildcard Mask</h2>
+        <input id="wm-subnet" class="input" placeholder="Subnet mask (255.255.255.0)">
+        <button id="wm-fromMask" class="btn">From Mask</button>
+        <input id="wm-out-fromMask" class="input" readonly>
+        <input id="wm-cidr" class="input" placeholder="CIDR (24)">
+        <button id="wm-fromCidr" class="btn">From CIDR</button>
+        <input id="wm-out-mask" class="input" readonly>
+        <input id="wm-out-wild" class="input" readonly>
+      </div>
 
-  </main>
+      <!-- Base64 -->
+      <div id="view-base64" class="view hidden">
+        <h2 class="text-lg font-bold">Base64 Encode/Decode</h2>
+        <textarea id="b64-in" class="input"></textarea>
+        <button id="b64-encode" class="btn">Encode</button>
+        <button id="b64-decode" class="btn">Decode</button>
+        <textarea id="b64-out" class="output"></textarea>
+      </div>
+
+      <!-- ALE -->
+      <div id="view-ale" class="view hidden">
+        <h2 class="text-lg font-bold">ALE / SLE / ARO</h2>
+        <input id="av" class="input" placeholder="Asset Value">
+        <input id="ef" class="input" placeholder="Exposure Factor (0-1)">
+        <input id="aro" class="input" placeholder="ARO">
+        <button id="calc-ale" class="btn">Calculate</button>
+        <textarea id="ale-out" class="output"></textarea>
+      </div>
+
+      <!-- CVSS -->
+      <div id="view-cvss" class="view hidden">
+        <h2 class="text-lg font-bold">CVSS Vector Helper</h2>
+        <select id="cvss-av" class="input"><option value="AV:N">Network</option></select>
+        <button id="cvss-build" class="btn">Build Vector</button>
+        <input id="cvss-vector" class="input" readonly>
+      </div>
+
+      <!-- Regex -->
+      <div id="view-regex" class="view hidden">
+        <h2 class="text-lg font-bold">Regex Tester</h2>
+        <input id="re-pattern" class="input" placeholder="Pattern">
+        <input id="re-flags" class="input" placeholder="Flags (gim)">
+        <textarea id="re-text" class="input"></textarea>
+        <button id="re-run" class="btn">Run</button>
+        <textarea id="re-out" class="output"></textarea>
+      </div>
+
+      <!-- Runbook -->
+      <div id="view-runbook" class="view hidden">
+        <h2 id="rb-title" class="text-lg font-bold">Runbook</h2>
+        <div id="rb-quick"></div>
+        <div id="rb-full"></div>
+      </div>
+    </main>
+  </div>
+
+  <script src="script.js"></script>
 </body>
 </html>
