@@ -1,0 +1,69 @@
+/* Color system via CSS variables */
+:root {
+  --bg: #f8fafc;
+  --text: #0f172a;
+  --panel: #ffffff;
+  --panel-border: #e2e8f0;
+  --muted: #64748b;
+  --link: #2563eb;
+  --hover: #f1f5f9;
+  --tab-active: #eef2ff;
+  --toast: #111827;
+}
+
+body.dark-mode {
+  --bg: #0b1220;
+  --text: #e2e8f0;
+  --panel: #0f172a;
+  --panel-border: #334155;
+  --muted: #94a3b8;
+  --link: #93c5fd;
+  --hover: #111827;
+  --tab-active: #1f2937;
+  --toast: #111827;
+}
+
+/* Global */
+body { background: var(--bg) !important; color: var(--text) !important; }
+header { background: var(--panel) !important; border-color: var(--panel-border) !important; }
+
+/* Common panels, cards, lists */
+.bg-white { background: var(--panel) !important; }
+.border { border-color: var(--panel-border) !important; }
+.text-slate-900 { color: var(--text) !important; }
+.text-slate-500, .text-slate-600 { color: var(--muted) !important; }
+
+/* Left nav items */
+.nav-item { display:block; width:100%; text-align:left; padding:.5rem .75rem; border-radius:.375rem; cursor:pointer; }
+.nav-item:hover { background: var(--hover); }
+
+/* Dashboard quick links */
+.card-link { padding:.5rem .75rem; border:1px solid var(--panel-border); border-radius:.375rem; background: var(--panel); text-align:center; }
+.card-link:hover { background: var(--hover); }
+
+/* Buttons */
+.btn { padding:.5rem .75rem; border:1px solid var(--panel-border); border-radius:.375rem; background: var(--panel); cursor:pointer; }
+.btn:hover { background: var(--hover); }
+
+/* Links */
+.a { color: var(--link); text-decoration: underline; }
+
+/* Tabs */
+.tabs .tab { padding:.25rem .5rem; border:1px solid var(--panel-border); border-radius:.375rem; margin-right:.5rem; cursor:pointer; }
+.tabs .tab.active { background: var(--tab-active); }
+
+/* Inputs / Textareas / Selects */
+input, textarea, select { background: var(--panel); color: var(--text); border:1px solid var(--panel-border); }
+input::placeholder, textarea::placeholder { color: var(--muted); }
+
+/* Utility */
+.hidden { display:none; }
+.mono { font-family: ui-monospace,SFMono-Regular,Menlo,Monaco,Consolas,monospace; }
+
+/* Simple responsive grids used in content */
+.grid2 { display:grid; grid-template-columns:1fr 1fr; gap:.75rem; }
+.grid3 { display:grid; grid-template-columns:1fr 1fr 1fr; gap:.75rem; }
+@media (max-width: 1024px) { .grid2, .grid3 { grid-template-columns:1fr; } }
+
+/* Toast */
+.toast { position:fixed; bottom:1.25rem; right:1.25rem; background: var(--toast); color:#fff; padding:.5rem .75rem; border-radius:.375rem; opacity:.92; font-size:.875rem; }

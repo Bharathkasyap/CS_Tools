@@ -1,0 +1,437 @@
+<script type="text/javascript">
+        var gk_isXlsx = false;
+        var gk_xlsxFileLookup = {};
+        var gk_fileData = {};
+        function filledCell(cell) {
+          return cell !== '' && cell != null;
+        }
+        function loadFileData(filename) {
+        if (gk_isXlsx && gk_xlsxFileLookup[filename]) {
+            try {
+                var workbook = XLSX.read(gk_fileData[filename], { type: 'base64' });
+                var firstSheetName = workbook.SheetNames[0];
+                var worksheet = workbook.Sheets[firstSheetName];
+
+                // Convert sheet to JSON to filter blank rows
+                var jsonData = XLSX.utils.sheet_to_json(worksheet, { header: 1, blankrows: false, defval: '' });
+                // Filter out blank rows (rows where all cells are empty, null, or undefined)
+                var filteredData = jsonData.filter(row => row.some(filledCell));
+
+                // Heuristic to find the header row by ignoring rows with fewer filled cells than the next row
+                var headerRowIndex = filteredData.findIndex((row, index) =>
+                  row.filter(filledCell).length >= filteredData[index + 1]?.filter(filledCell).length
+                );
+                // Fallback
+                if (headerRowIndex === -1 || headerRowIndex > 25) {
+                  headerRowIndex = 0;
+                }
+
+                // Convert filtered JSON back to CSV
+                var csv = XLSX.utils.aoa_to_sheet(filteredData.slice(headerRowIndex)); // Create a new sheet from filtered array of arrays
+                csv = XLSX.utils.sheet_to_csv(csv, { header: 1 });
+                return csv;
+            } catch (e) {
+                console.error(e);
+                return "";
+            }
+        }
+        return gk_fileData[filename] || "";
+        }
+        </script><!DOCTYPE html>
+<html lang="en">
+<head>
+  <meta charset="UTF-8">
+  <meta name="viewport" content="width=device-width, initial-scale=1.0">
+  <title>Cyber Analyst Mission Control</title>
+  <link rel="stylesheet" href="CS_tools_Style.css">
+  <script src="CS_tools_Script.js" defer></script>
+</head>
+<body class="font-sans text-sm text-slate-900 bg-white min-h-screen flex flex-col">
+  <header class="p-4 border-b flex justify-between items-center">
+    <h1 class="text-lg font-semibold">Cyber Analyst Mission Control</h1>
+    <button id="themeToggle" class="btn">Theme</button>
+  </header>
+
+  <main class="flex-1 grid grid-cols-[250px_1fr_250px] lg:grid-cols-1 gap-4 p-4">
+    <aside class="space-y-4">
+      <input id="globalSearch" class="w-full p-2 rounded border" type="text" placeholder="Filter tools...">
+
+      <section>
+        <button data-collapse="#grp-network" class="font-semibold w-full text-left">Networking▾</button>
+        <div id="grp-network" class="mt-2 space-y-1">
+          <button class="nav-item" data-tool="subnetting">Subnetting Calculator</button>
+          <button class="nav-item" data-tool="cidr">CIDR Calculator</button>
+          <button class="nav-item" data-tool="wildcard">Wildcard Mask</button>
+          <button class="nav-item" data-tool="hexdec">Hex ↔ Dec</button>
+          <button class="nav-item" data-tool="timestamp">Timestamp Converter</button>
+        </div>
+      </section>
+
+      <section>
+        <button data-collapse="#grp-crypto" class="font-semibold w-full text-left">Crypto & Encoding▾</button>
+        <div id="grp-crypto" class="mt-2 space-y-1">
+          <button class="nav-item" data-tool="base64">Base64 Encode/Decode</button>
+        </div>
+      </section>
+
+      <section>
+        <button data-collapse="#grp-risk" class="font-semibold w-full text-left">Risk & Governance▾</button>
+        <div id="grp-risk" class="mt-2 space-y-1">
+          <button class="nav-item" data-tool="ale">ALE / SLE / ARO Calculator</button>
+          <button class="nav-item" data-tool="cvss">CVSS v3.1 Vector Helper</button>
+        </div>
+      </section>
+
+      <section>
+        <button data-collapse="#grp-siem" class="font-semibold w-full text-left">SIEM & Detection▾</button>
+        <div id="grp-siem" class="mt-2 space-y-1">
+          <button class="nav-item" data-tool="kqlCheat">KQL Cheat Sheet</button>
+          <button class="nav-item" data-tool="splCheat">SPL Cheat Sheet</button>
+          <button class="nav-item" data-tool="regex">Regex Tester</button>
+        </div>
+      </section>
+
+      <section>
+        <button data-collapse="#grp-runbooks" class="font-semibold w-full text-left">Runbooks▾</button>
+        <div id="grp-runbooks" class="mt-2 space-y-1">
+          <button class="nav-item" data-tool="runbook" data-runbook="ransomware">Ransomware Suspected</button>
+          <button class="nav-item" data-tool="runbook" data-runbook="unauth">Unauthorized Access</button>
+          <button class="nav-item" data-tool="runbook" data-runbook="phishing">Phishing Wave</button>
+          <button class="nav-item" data-tool="runbook" data-runbook="exfil">Active Data Exfiltration</button>
+          <button class="nav-item" data-tool="runbook" data-runbook="lateral">Lateral Movement</button>
+          <button class="nav-item" data-tool="runbook" data-runbook="webshell">Web Shell Suspected</button>
+          <button class="nav-item" data-tool="runbook" data-runbook="ddos">DDoS / Edge Exploitation</button>
+          <button class="nav-item" data-tool="runbook" data-runbook="insider">Insider Data Mishandling</button>
+          <button class="nav-item" data-tool="runbook" data-runbook="lostdevice">Lost/Stolen Device</button>
+        </div>
+      </section>
+
+      <section>
+        <button data-collapse="#grp-links" class="font-semibold w-full text-left">Gold Links▾</button>
+        <div id="grp-links" class="mt-2 space-y-1">
+          <button class="nav-item" data-tool="links">Curated Docs & References</button>
+        </div>
+      </section>
+    </aside>
+
+    <section class="space-y-4">
+      <div id="view-dashboard" class="view">
+        <h2 class="font-semibold text-lg">Dashboard</h2>
+        <p class="text-slate-500">Quick access to favorites and recent tools.</p>
+        <div class="grid3 mt-4">
+          <button class="card-link" data-tool="base64">Open Base64</button>
+          <button class="card-link" data-tool="cidr">Open CIDR</button>
+          <button class="card-link" data-tool="subnetting">Open Subnetting</button>
+          <button class="card-link" data-tool="wildcard">Open Wildcard</button>
+          <button class="card-link" data-tool="kqlCheat">Open KQL</button>
+        </div>
+      </div>
+
+      <div id="view-subnetting" class="view hidden">
+        <h2 class="font-semibold text-lg">Subnetting Calculator</h2>
+        <p class="text-slate-500">Calculate subnet details for CCNA and network planning.</p>
+        <div class="grid2 mt-4">
+          <div class="p-4 border rounded-md bg-white">
+            <h3 class="font-medium">Input</h3>
+            <label class="block mt-2">
+              IP Address (e.g., 192.168.1.0)
+              <input id="subnet-ip" class="w-full p-2 mt-1 rounded border" type="text" placeholder="Enter IPv4 address">
+            </label>
+            <label class="block mt-2">
+              Subnet Mask (e.g., 255.255.255.0) or CIDR Prefix (e.g., 24)
+              <input id="subnet-mask" class="w-full p-2 mt-1 rounded border" type="text" placeholder="Enter mask or prefix">
+            </label>
+            <button id="subnet-calc" class="btn mt-2">Calculate</button>
+          </div>
+          <div class="p-4 border rounded-md bg-white">
+            <h3 class="font-medium">Results</h3>
+            <textarea id="subnet-out" class="w-full p-2 mt-2 border rounded mono" rows="12" readonly></textarea>
+          </div>
+        </div>
+      </div>
+
+      <div id="view-base64" class="view hidden">
+        <h2 class="font-semibold text-lg">Base64 Encode/Decode</h2>
+        <p class="text-slate-500">Client side only</p>
+        <div class="grid2 mt-4">
+          <div class="p-4 border rounded-md bg-white">
+            <h3 class="font-medium">Input</h3>
+            <textarea id="b64-in" class="w-full p-2 mt-2 border rounded mono" rows="4" placeholder="Enter text or base64"></textarea>
+            <div class="flex gap-2 mt-2">
+              <button id="b64-encode" class="btn">Encode</button>
+              <button id="b64-decode" class="btn">Decode</button>
+              <button id="b64-clear" class="btn">Clear</button>
+            </div>
+          </div>
+          <div class="p-4 border rounded-md bg-white">
+            <h3 class="font-medium">Output</h3>
+            <textarea id="b64-out" class="w-full p-2 mt-2 border rounded mono" rows="4" readonly></textarea>
+            <button id="b64-copy" class="btn mt-2">Copy</button>
+          </div>
+        </div>
+      </div>
+
+      <div id="view-wildcard" class="view hidden">
+        <h2 class="font-semibold text-lg">Wildcard Mask Calculator</h2>
+        <div class="grid2 mt-4">
+          <div class="p-4 border rounded-md bg-white">
+            <h3 class="font-medium">From Subnet Mask</h3>
+            <label class="block mt-2">
+              Subnet mask (e.g., 255.255.255.0)
+              <input id="wm-subnet" class="w-full p-2 mt-1 rounded border" type="text">
+            </label>
+            <button id="wm-fromMask" class="btn mt-2">Calculate</button>
+            <h3 class="font-medium mt-4">Result</h3>
+            <p class="text-slate-500">Wildcard mask</p>
+            <input id="wm-out-fromMask" class="w-full p-2 mt-1 rounded border" type="text" readonly>
+          </div>
+          <div class="p-4 border rounded-md bg-white">
+            <h3 class="font-medium">From CIDR Prefix</h3>
+            <label class="block mt-2">
+              Prefix length 0–32
+              <input id="wm-cidr" class="w-full p-2 mt-1 rounded border" type="text">
+            </label>
+            <button id="wm-fromCidr" class="btn mt-2">Calculate</button>
+            <h3 class="font-medium mt-4">Subnet mask</h3>
+            <input id="wm-out-mask" class="w-full p-2 mt-1 rounded border" type="text" readonly>
+            <h3 class="font-medium mt-2">Wildcard mask</h3>
+            <input id="wm-out-wild" class="w-full p-2 mt-1 rounded border" type="text" readonly>
+          </div>
+        </div>
+      </div>
+
+      <div id="view-hexdec" class="view hidden">
+        <h2 class="font-semibold text-lg">Hex ↔ Dec Converter</h2>
+        <div class="grid2 mt-4">
+          <div class="p-4 border rounded-md bg-white">
+            <h3 class="font-medium">Decimal → Hex</h3>
+            <input id="dec-in" class="w-full p-2 mt-2 rounded border" type="text" placeholder="Enter decimal">
+            <button id="dec-to-hex" class="btn mt-2">Convert</button>
+            <input id="dec-hex-out" class="w-full p-2 mt-2 rounded border" type="text" readonly>
+          </div>
+          <div class="p-4 border rounded-md bg-white">
+            <h3 class="font-medium">Hex → Decimal</h3>
+            <input id="hex-in" class="w-full p-2 mt-2 rounded border" type="text" placeholder="Enter hex (0x or no prefix)">
+            <button id="hex-to-dec" class="btn mt-2">Convert</button>
+            <input id="hex-dec-out" class="w-full p-2 mt-2 rounded border" type="text" readonly>
+          </div>
+        </div>
+      </div>
+
+      <div id="view-timestamp" class="view hidden">
+        <h2 class="font-semibold text-lg">Timestamp Converter</h2>
+        <div class="grid2 mt-4">
+          <div class="p-4 border rounded-md bg-white">
+            <label class="block mt-2">
+              Unix epoch (seconds)
+              <input id="ts-epoch" class="w-full p-2 mt-1 rounded border" type="text">
+            </label>
+            <button id="ts-from-epoch" class="btn mt-2">Epoch → Human</button>
+            <label class="block mt-2">
+              Human (YYYY-MM-DD HH:mm:ss)
+              <input id="ts-human" class="w-full p-2 mt-1 rounded border" type="text">
+            </label>
+            <button id="ts-to-epoch" class="btn mt-2">Human → Epoch</button>
+          </div>
+          <div class="p-4 border rounded-md bg-white">
+            <h3 class="font-medium">Results</h3>
+            <textarea id="ts-out" class="w-full p-2 mt-2 border rounded mono" rows="6" readonly></textarea>
+          </div>
+        </div>
+      </div>
+
+      <div id="view-ale" class="view hidden">
+        <h2 class="font-semibold text-lg">ALE / SLE / ARO Calculator</h2>
+        <div class="grid2 mt-4">
+          <div class="p-4 border rounded-md bg-white">
+            <label class="block mt-2">
+              Asset Value (AV)
+              <input id="av" class="w-full p-2 mt-1 rounded border" type="text" placeholder="Enter AV">
+            </label>
+            <label class="block mt-2">
+              Exposure Factor (EF, 0–1)
+              <input id="ef" class="w-full p-2 mt-1 rounded border" type="text" placeholder="Enter EF (0–1)">
+            </label>
+            <label class="block mt-2">
+              Annualized Rate of Occurrence (ARO)
+              <input id="aro" class="w-full p-2 mt-1 rounded border" type="text" placeholder="Enter ARO">
+            </label>
+            <button id="calc-ale" class="btn mt-2">Calculate</button>
+          </div>
+          <div class="p-4 border rounded-md bg-white">
+            <h3 class="font-medium">Results</h3>
+            <textarea id="ale-out" class="w-full p-2 mt-2 border rounded mono" rows="6" readonly></textarea>
+          </div>
+        </div>
+      </div>
+
+      <div id="view-cvss" class="view hidden">
+        <h2 class="font-semibold text-lg">CVSS v3.1 Vector Helper</h2>
+        <p class="text-slate-500">Build a base vector then open in FIRST/NVD calculators for official scoring.</p>
+        <div class="grid2 mt-4">
+          <div class="p-4 border rounded-md bg-white">
+            <div class="grid grid-cols-2 gap-2">
+              <label class="block">
+                AV
+                <select id="cvss-av" class="w-full p-2 mt-1 rounded border">
+                  <option value="AV:N">Network</option>
+                  <option value="AV:A">Adjacent</option>
+                  <option value="AV:L">Local</option>
+                  <option value="AV:P">Physical</option>
+                </select>
+              </label>
+              <label class="block">
+                AC
+                <select id="cvss-ac" class="w-full p-2 mt-1 rounded border">
+                  <option value="AC:L">Low</option>
+                  <option value="AC:H">High</option>
+                </select>
+              </label>
+              <label class="block">
+                PR
+                <select id="cvss-pr" class="w-full p-2 mt-1 rounded border">
+                  <option value="PR:N">None</option>
+                  <option value="PR:L">Low</option>
+                  <option value="PR:H">High</option>
+                </select>
+              </label>
+              <label class="block">
+                UI
+                <select id="cvss-ui" class="w-full p-2 mt-1 rounded border">
+                  <option value="UI:N">None</option>
+                  <option value="UI:R">Required</option>
+                </select>
+              </label>
+              <label class="block">
+                S
+                <select id="cvss-s" class="w-full p-2 mt-1 rounded border">
+                  <option value="S:U">Unchanged</option>
+                  <option value="S:C">Changed</option>
+                </select>
+              </label>
+              <label class="block">
+                C
+                <select id="cvss-c" class="w-full p-2 mt-1 rounded border">
+                  <option value="C:N">None</option>
+                  <option value="C:L">Low</option>
+                  <option value="C:H">High</option>
+                </select>
+              </label>
+              <label class="block">
+                I
+                <select id="cvss-i" class="w-full p-2 mt-1 rounded border">
+                  <option value="I:N">None</option>
+                  <option value="I:L">Low</option>
+                  <option value="I:H">High</option>
+                </select>
+              </label>
+              <label class="block">
+                A
+                <select id="cvss-a" class="w-full p-2 mt-1 rounded border">
+                  <option value="A:N">None</option>
+                  <option value="A:L">Low</option>
+                  <option value="A:H">High</option>
+                </select>
+              </label>
+            </div>
+            <button id="cvss-build" class="btn mt-2">Build Vector</button>
+          </div>
+          <div class="p-4 border rounded-md bg-white">
+            <h3 class="font-medium">Vector</h3>
+            <input id="cvss-vector" class="w-full p-2 mt-1 rounded border mono" type="text" readonly>
+            <div class="flex gap-2 mt-2">
+              <a id="cvss-first" class="btn" href="#" target="_blank">Open in FIRST</a>
+              <a id="cvss-nvd" class="btn" href="#" target="_blank">Open in NVD</a>
+            </div>
+            <p class="text-slate-500 mt-2">Use official calculators for exact scoring.</p>
+          </div>
+        </div>
+      </div>
+
+      <div id="view-kqlCheat" class="view hidden">
+        <h2 class="font-semibold text-lg">KQL Cheat Sheet</h2>
+        <div id="kql-body" class="mt-4"></div>
+      </div>
+
+      <div id="view-splCheat" class="view hidden">
+        <h2 class="font-semibold text-lg">SPL Cheat Sheet</h2>
+        <div id="spl-body" class="mt-4"></div>
+      </div>
+
+      <div id="view-regex" class="view hidden">
+        <h2 class="font-semibold text-lg">Regex Tester</h2>
+        <div class="grid2 mt-4">
+          <div class="p-4 border rounded-md bg-white">
+            <label class="block mt-2">
+              Pattern (JS)
+              <input id="re-pattern" class="w-full p-2 mt-1 rounded border" type="text" placeholder="Enter regex pattern">
+            </label>
+            <label class="block mt-2">
+              Flags
+              <input id="re-flags" class="w-full p-2 mt-1 rounded border" type="text" placeholder="e.g., gim">
+            </label>
+            <label class="block mt-2">
+              Text
+              <textarea id="re-text" class="w-full p-2 mt-1 border rounded mono" rows="4" placeholder="Enter text to test"></textarea>
+            </label>
+            <button id="re-run" class="btn mt-2">Run</button>
+          </div>
+          <div class="p-4 border rounded-md bg-white">
+            <h3 class="font-medium">Matches</h3>
+            <textarea id="re-out" class="w-full p-2 mt-2 border rounded mono" rows="8" readonly></textarea>
+          </div>
+        </div>
+      </div>
+
+      <div id="view-runbook" class="view hidden">
+        <h2 id="rb-title" class="font-semibold text-lg">Runbook</h2>
+        <div class="tabs mt-4 flex">
+          <button class="tab active" data-tab="#rb-quick">5 minute actions</button>
+          <button class="tab" data-tab="#rb-full">Full checklist</button>
+        </div>
+        <div id="rb-quick" class="tabview mt-4 p-4 border rounded-md bg-white"></div>
+        <div id="rb-full" class="tabview hidden mt-4 p-4 border rounded-md bg-white"></div>
+      </div>
+
+      <div id="view-links" class="view hidden">
+        <h2 class="font-semibold text-lg">Curated Docs & References</h2>
+        <ul class="mt-4 list-disc ml-5 space-y-1">
+          <li><a class="a" href="https://learn.microsoft.com/en-us/kusto/query" target="_blank">Kusto Query Language Docs</a></li>
+          <li><a class="a" href="https://learn.microsoft.com/en-us/azure/sentinel" target="_blank">Microsoft Sentinel Docs</a></li>
+          <li><a class="a" href="https://attack.mitre.org/matrices/enterprise/" target="_blank">MITRE ATT&CK Enterprise Matrix</a></li>
+          <li><a class="a" href="https://www.cisa.gov/known-exploited-vulnerabilities-catalog" target="_blank">CISA KEV Catalog</a></li>
+          <li><a class="a" href="https://nvd.nist.gov/vuln/search" target="_blank">NVD CVE Search</a></li>
+          <li><a class="a" href="https://www.nist.gov/cyberframework" target="_blank">NIST CSF</a></li>
+          <li><a class="a" href="https://docs.splunk.com/Documentation/Splunk/9.4.2/SearchReference/WhatsInThisManual" target="_blank">Splunk SPL Search Reference</a></li>
+          <li><a class="a" href="https://docs.paloaltonetworks.com/" target="_blank">Palo Alto Networks Tech Docs</a></li>
+          <li><a class="a" href="https://www.first.org/cvss/calculator/3.1" target="_blank">FIRST CVSS v3.1 Calculator</a></li>
+          <li><a class="a" href="https://nvd.nist.gov/vuln-metrics/cvss/v3-calculator" target="_blank">NVD CVSS v3 Calculator</a></li>
+          <li><a class="a" href="https://github.com/SigmaHQ/sigma" target="_blank">Sigma Rules</a></li>
+          <li><a class="a" href="https://github.com/redcanaryco/atomic-red-team" target="_blank">Atomic Red Team</a></li>
+        </ul>
+      </div>
+    </section>
+
+    <aside class="space-y-4">
+      <section>
+        <h2 class="font-semibold text-lg">Related Links</h2>
+        <ul id="relatedLinks" class="mt-2 list-disc ml-5 space-y-1"></ul>
+      </section>
+
+      <section>
+        <h2 class="font-semibold text-lg">Personal Quick Links</h2>
+        <div class="mt-2 flex gap-2">
+          <input id="ql-url" class="flex-1 p-2 rounded border" type="text" placeholder="Add URL">
+          <button id="ql-add" class="btn">Add</button>
+        </div>
+        <ul id="ql-list" class="mt-2 list-disc ml-5 space-y-1"></ul>
+      </section>
+
+      <section>
+        <h2 class="font-semibold text-lg">Notes</h2>
+        <textarea id="notes" class="w-full p-2 mt-2 border rounded" rows="10" placeholder="Auto saved locally"></textarea>
+      </section>
+    </aside>
+  </main>
+</body>
+</html>
